@@ -1,0 +1,10 @@
+README.md
+setup.py
+Laptop_Price_Prediction.egg-info/PKG-INFO
+Laptop_Price_Prediction.egg-info/SOURCES.txt
+Laptop_Price_Prediction.egg-info/dependency_links.txt
+Laptop_Price_Prediction.egg-info/requires.txt
+Laptop_Price_Prediction.egg-info/top_level.txt
+src/__init__.py
+src/exception.py
+src/logger.py

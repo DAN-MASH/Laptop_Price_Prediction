@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: Laptop-Price-Prediction
+Version: 0.0.1
+Author: Danson macharia
+Requires-Dist: pandas
+Requires-Dist: seaborn
+Requires-Dist: matplotlib
