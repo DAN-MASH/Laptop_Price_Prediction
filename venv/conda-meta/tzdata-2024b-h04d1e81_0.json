@@ -4859,7 +4859,7 @@
     ],
     "paths_version": 1
   },
-  "requested_spec": "None",
+  "requested_spec": "tzdata",
   "sha256": "9fdd287b55be4c475789a69d3b94cdb73f756583a6d7306da1706e43eee573da",
   "size": 117432,
   "subdir": "noarch",

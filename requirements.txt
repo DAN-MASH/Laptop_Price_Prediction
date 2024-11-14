@@ -2,4 +2,9 @@ pandas
 seaborn
 matplotlib
 kaggle
+kagglehub
+ipywidgets
+scikit-learn
+dill
+#pickle
 #-e .

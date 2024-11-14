@@ -115,6 +115,11 @@ class EnvBuilder:
         context.prompt = '(%s) ' % prompt
         create_if_needed(env_dir)
         executable = sys._base_executable
+        if not executable:  # see gh-96861
+            raise ValueError('Unable to determine path to the running '
+                             'Python interpreter. Provide an explicit path or '
+                             'check that your PATH environment variable is '
+                             'correctly set.')
         dirname, exename = os.path.split(os.path.abspath(executable))
         context.executable = executable
         context.python_dir = dirname
@@ -234,12 +239,7 @@ class EnvBuilder:
                     basename = 'venvwlauncher'
                 src = os.path.join(os.path.dirname(src), basename + ext)
             else:
-                if basename.startswith('python'):
-                    scripts = sys.prefix
-                else:
-                    scripts = os.path.join(os.path.dirname(__file__), "scripts", "nt")
-                    src = os.path.join(scripts, basename + ext)
-
+                src = srcfn
             if not os.path.exists(src):
                 if not bad_src:
                     logger.warning('Unable to copy %r', src)
@@ -257,9 +257,9 @@ class EnvBuilder:
         binpath = context.bin_path
         path = context.env_exe
         copier = self.symlink_or_copy
-        copier(context.executable, path)
         dirname = context.python_dir
         if os.name != 'nt':
+            copier(context.executable, path)
             if not os.path.islink(path):
                 os.chmod(path, 0o755)
             for suffix in ('python', 'python3', f'python3.{sys.version_info[1]}'):
@@ -308,14 +308,25 @@ class EnvBuilder:
                         shutil.copyfile(src, dst)
                         break
 
+    def _call_new_python(self, context, *py_args, **kwargs):
+        """Executes the newly created Python using safe-ish options"""
+        # gh-98251: We do not want to just use '-I' because that masks
+        # legitimate user preferences (such as not writing bytecode). All we
+        # really need is to ensure that the path variables do not overrule
+        # normal venv handling.
+        args = [context.env_exec_cmd, *py_args]
+        kwargs['env'] = env = os.environ.copy()
+        env['VIRTUAL_ENV'] = context.env_dir
+        env.pop('PYTHONHOME', None)
+        env.pop('PYTHONPATH', None)
+        kwargs['cwd'] = context.env_dir
+        kwargs['executable'] = context.env_exec_cmd
+        subprocess.check_output(args, **kwargs)
+
     def _setup_pip(self, context):
         """Installs or upgrades pip in a virtual environment"""
-        # We run ensurepip in isolated mode to avoid side effects from
-        # environment vars, the current directory and anything else
-        # intended for the global Python environment
-        cmd = [context.env_exec_cmd, '-Im', 'ensurepip', '--upgrade',
-                                                         '--default-pip']
-        subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        self._call_new_python(context, '-m', 'ensurepip', '--upgrade',
+                              '--default-pip', stderr=subprocess.STDOUT)
 
     def setup_scripts(self, context):
         """
@@ -414,9 +425,8 @@ class EnvBuilder:
         logger.debug(
             f'Upgrading {CORE_VENV_DEPS} packages in {context.bin_path}'
         )
-        cmd = [context.env_exec_cmd, '-m', 'pip', 'install', '--upgrade']
-        cmd.extend(CORE_VENV_DEPS)
-        subprocess.check_call(cmd)
+        self._call_new_python(context, '-m', 'pip', 'install', '--upgrade',
+                              *CORE_VENV_DEPS)
 
 
 def create(env_dir, system_site_packages=False, clear=False,

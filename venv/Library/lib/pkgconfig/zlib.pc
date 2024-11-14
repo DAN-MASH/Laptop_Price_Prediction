@@ -1,8 +1,8 @@
-prefix=D:/laptop_prediction/venv/Library
-exec_prefix=D:/laptop_prediction/venv/Library
-libdir=D:/laptop_prediction/venv/Library/lib
-sharedlibdir=D:/laptop_prediction/venv/Library/lib
-includedir=D:/laptop_prediction/venv/Library/include
+prefix=d:/laptop_prediction/venv/Library
+exec_prefix=d:/laptop_prediction/venv/Library
+libdir=d:/laptop_prediction/venv/Library/lib
+sharedlibdir=d:/laptop_prediction/venv/Library/lib
+includedir=d:/laptop_prediction/venv/Library/include
 
 Name: zlib
 Description: zlib compression library
